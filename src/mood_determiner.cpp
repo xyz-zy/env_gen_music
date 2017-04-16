@@ -28,7 +28,7 @@ public:
     // Subscrive to input video feed and publish output video feed
     image_sub_ = it_.subscribe("/nav_kinect/rgb/image_color", 1, 
       &ImageConverter::imageCb, this);
-    image_pub_ = it_.advertise("/image_converter/output_video", 1);
+    image_pub_ = it_.advertise("/mood_determiner/output_video", 1);
     // publish to "hat_pos" 
     colormood_pub = nh_.advertise<packagename::colormood>("colormood", 1);
     cv::namedWindow(OPENCV_WINDOW);
@@ -99,7 +99,7 @@ public:
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "image_converter");
+  ros::init(argc, argv, "mood_determiner");
   ImageConverter ic;
   ros::spin();
   return 0;
