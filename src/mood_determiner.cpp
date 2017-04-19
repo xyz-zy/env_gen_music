@@ -5,8 +5,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>  
-//TODO great message named colormood
-//#include <packagename/colormood.h>
+#include <Environment-based-Music-Generation/colormood.h>
 
 static const std::string OPENCV_WINDOW = "Image window";
 static const std::string OUT_WINDOW = "Output window";
@@ -16,12 +15,9 @@ class ImageConverter
   ros::NodeHandle nh_;
   image_transport::ImageTransport it_;
   image_transport::Subscriber image_sub_;
-	
   image_transport::Publisher image_pub_;
-//  image_transport::Publisher colormood_pub;
+  ros::Publisher colormood_pub;
   int counter;
-  int x;
-  int y;
 	int r;
 	int g;
 	int b;
@@ -34,8 +30,8 @@ public:
     image_sub_ = it_.subscribe("/nav_kinect/rgb/image_color", 1, 
       &ImageConverter::imageCb, this);
     image_pub_ = it_.advertise("/mood_determiner/output_video", 1);
-    // publish to "hat_pos" 
-//    colormood_pub = nh_.advertise<packagename::colormood>("colormood", 1);
+    // publish to "colormood" 
+    colormood_pub = nh_.advertise<Environment-based-Music-Generation::colormood>("colormood", 1);
     cv::namedWindow(OPENCV_WINDOW);
     r = 0;
     g = 0;
@@ -66,8 +62,9 @@ public:
     r = 0;
     g = 0;
     b = 0;
-//    packagename::moodcolor mood_msg;
-
+	int counter = 0;
+    Environment-based-Music-Generation::moodcolor mood_msg;
+	
 	outImg = cv_ptr->image.clone(); 
 	for (unsigned int i = 0; i < outImg.rows; i ++){
 		for (unsigned int j = 0; j < outImg.cols; j ++){
@@ -78,14 +75,22 @@ public:
 			r += r_ij;
 			g += g_ij;
 			b += b_ij;
+			counter++;
 		}
 	}
 
-//	int mood;
+	// get average r g b values
+	r = r/counter;
+	g = g/counter;
+	b = b/counter;	
+
+	int happiness;
+	int tempo;
 	// TODO determine mood here with r g b
 
-//	mood_msg.mood = mood;
-//	colormood_pub.publish(mood);
+	mood_msg.happiness = mood;
+	mood_msg.tempo = tempo;
+	colormood_pub.publish(mood_msg);
 	
 
 	//show input
