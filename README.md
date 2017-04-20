@@ -15,3 +15,9 @@ Idea 2:
 - saturation determines tempo (slow, med, fast)
 - hue determine happiness/sadness of song (on a scale of 1-5)
 - three speeds and five moods -> fifteen categories
+
+Sound play ros info/options:
+http://wiki.ros.org/sound_play
+  Tutorial: http://wiki.ros.org/sound_play/Tutorials/ConfiguringAndUsingSpeakers
+  Example: http://answers.ros.org/question/233956/how-do-i-play-sound-file-in-a-c-node-with-sound_play/
+ 
