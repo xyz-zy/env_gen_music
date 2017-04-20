@@ -20,4 +20,8 @@ Sound play ros info/options:
 http://wiki.ros.org/sound_play
   Tutorial: http://wiki.ros.org/sound_play/Tutorials/ConfiguringAndUsingSpeakers
   Example: http://answers.ros.org/question/233956/how-do-i-play-sound-file-in-a-c-node-with-sound_play/
- 
+
+Stuff to do for sound:
+1. Change the package name so the package can work.
+2. Use the playWavFromPkg method to play the sound. It uses path relative to its package.
+3. Collect a bunch of .wav files and put them in various folders based on category. 
