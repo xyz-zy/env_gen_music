@@ -1,0 +1,30 @@
+happy_fast1.wav - "King of Coins" from playonloop.com
+happy_fast2.wav - "Cooking Mania" from playonloop.com
+happy_fast3.wav - "Easy Media" from playonloop.com
+happy_fast4
+happy_fast5
+
+happy_med1
+happy_med2.wav - "Water Drops" from playonloop.com
+		https://www.playonloop.com/free-download/index.php
+happy_med3.wav - "The Awakening" from playonloop.com
+happy_med4
+happy_med5
+
+calm1
+calm2.wav - "Perfect Bliss from playonloop.com
+calm3.wav - "Course of Nature from playonloop.com
+calm4
+calm5
+
+sad1.wav - "Sad Story" from playonloop.com
+sad2.wav - "Moonshine Piano" from playonloop.com
+sad3.wav - "Moonlight" from playonloop.com
+sad4.wav - "Late Night" from playonloop.com
+sad5
+
+person1
+person2
+person3
+person4
+person5
