@@ -5,7 +5,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>  
-#include <Environment-based-Music-Generation/colormood.h>
+#include <env_gen_music/colormood.h>
 
 static const std::string OPENCV_WINDOW = "Image window";
 static const std::string OUT_WINDOW = "Output window";
@@ -31,7 +31,7 @@ public:
       &ImageConverter::imageCb, this);
     image_pub_ = it_.advertise("/mood_determiner/output_video", 1);
     // publish to "colormood" 
-    colormood_pub = nh_.advertise<Environment-based-Music-Generation::colormood>("colormood", 1);
+    colormood_pub = nh_.advertise<env_gen_music::colormood>("colormood", 1);
     cv::namedWindow(OPENCV_WINDOW);
     r = 0;
     g = 0;
@@ -63,7 +63,7 @@ public:
     g = 0;
     b = 0;
 	int counter = 0;
-    Environment-based-Music-Generation::moodcolor mood_msg;
+    env_gen_music::moodcolor mood_msg;
 	
 	outImg = cv_ptr->image.clone(); 
 	for (unsigned int i = 0; i < outImg.rows; i ++){
