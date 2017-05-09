@@ -16,9 +16,11 @@ class ImageConverter {
 	image_transport::Publisher image_pub_;
 	ros::Publisher colormood_pub;
 	int rgb_counter;
+/*
 	int r;
 	int g;
 	int b;
+*/
 	int saturation;
 	int hue;
 	int sat_counter;
@@ -31,9 +33,10 @@ public: ImageConverter() : it_(nh_) {
 	// publish to "colormood" 
 	colormood_pub = nh_.advertise<env_gen_music::colormood>("colormood", 1);
 	cv::namedWindow(OPENCV_WINDOW);
-	r = 0;
+	/*r = 0;
 	g = 0;
-	b = 0;
+	b = 0;*/
+	hue = 0;
 	saturation = 0;
 }
 
@@ -53,13 +56,16 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg) {
 	//declare output image
 	cv::Mat RGBImg;
 	cv::Mat HSVImg;
+/*
 	r = 0;
 	g = 0;
 	b = 0;
 	int rgb_counter = 0;
+*/
 	env_gen_music::colormood mood_msg;
 	
 	//get the average RGB value of the image
+/*
 	RGBImg = cv_ptr->image.clone(); 
 	for (unsigned int i = 0; i < RGBImg.rows; i ++){
 		for (unsigned int j = 0; j < RGBImg.cols; j ++){
@@ -75,6 +81,7 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg) {
 	r = r/rgb_counter;
 	g = g/rgb_counter;
 	b = b/rgb_counter;	
+*/
 
 	//get the average saturation of the image
 	saturation = 0;

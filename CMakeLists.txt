@@ -146,9 +146,10 @@ include_directories(
 ## either from message generation or dynamic reconfigure
 # add_dependencies(first_package_cs378 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-# OpenCV examples
 add_executable(mood_determiner src/mood_determiner.cpp)
 target_link_libraries(mood_determiner ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
+add_executable(sound_player src/sound_player.cpp)
+target_link_libraries(sound_player ${catkin_LIBRARIES})
 
 
 #############

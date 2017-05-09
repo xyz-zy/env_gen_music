@@ -1,76 +1,63 @@
 #include <ros/ros.h>
 #include <tf/tf.h>
-#include <move_base_msgs/MoveBaseAction.h>
-#include <actionlib/client/simple_action_client.h>
 #include <tf/transform_listener.h>
-#include <actionlib/server/simple_action_server.h>
-#include "geometry_msgs/Pose.h"
-#include "geometry_msgs/PoseArray.h"
 #include <env_gen_music/colormood.h>
+#include <sound_play/sound_play.h>
 
 #include <vector>
 #include <iostream>
 
-//String category;
+char category_buffer[20];
 ros::Subscriber colormood_sub;
 
-// callback function: if hat is within threshold value of middle of window, don't move, otherwise move in correct direction in increments
 void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
 	int numSongs = 4;
-	// get random number based on numSongs
-	int rand;
+	int random = (rand() * 3) + 1;
 
-	if (msg->happiness == 1) { //TODO: fix threshold to fit happy
-		if (msg->tempo == 1) { //TODO: fix threshold to fit fast
-			// happy_fast
-			// string = "happy_fast%d.wav", rand
+	if (msg->happiness == 1) { 
+		if (msg->tempo == 1) { 
+			//happy_fast
+			sprintf(category_buffer, "happy_fast%d.wav", random);	
 		}
 		else {
-			// happy_slow
+			//happy_slow
+			sprintf(category_buffer, "happy_slow%d.wav", random);	
 		}
 	}
 	else {
-		if (msg->tempo == 1) { //TODO: fix threshold to fit fast
-			// slow_fast
+		if (msg->tempo == 1) { 
+			//sad_fast	
+			sprintf(category_buffer, "sad_fast%d.wav", random);	
 		}
 		else {
 			// sad_slow
+			sprintf(category_buffer, "sad_slow%d.wav", random);	
 		}
 	}
 
-	if (person) {
+	//debug statements
+	ROS_INFO("random: %d, string: %s\n", random, category_buffer);
+
+	//if (person) {
 		// person
-	}
+	//}
 }
 
-int main(int argc, char **argv)
-{
-  sound_play::SoundClient sc;
-  ros::init(argc, argv, "move_base_client");
-  ros::NodeHandle n;
-  colormood_sub = n.subscribe("/colormood", 1, colormood_callback);
-  ros::Rate r(100);
-
-//  actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> ac("move_base",true);
- 
-//  move_base_msgs::MoveBaseGoal goal;
-  
-  while (ros::ok()) {
-    ros::spinOnce();
+int main(int argc, char **argv) {
 	
-//int main(int argc, char ** argv) {
-// TODO do we need these 2 lines?
-//    ros::init(argc, argv, "example");
-//    ros::NodeHandle nh;
+	sound_play::SoundClient sc;
+	ros::init(argc, argv, "sound_player");
+	ros::NodeHandle n;
+	colormood_sub = n.subscribe("/colormood", 1, colormood_callback);
+	ros::Rate r(100);
 
-    sc.playWaveFromPkg("sound_play", /*category*/"sounds/BACKINGUP.ogg");
-
-//   ac.sendGoal(goal);
-    r.sleep();
-    //block until the action is completed
-	// TODO how do we wait for 20 seconds for song to play?
- //   ac.waitForResult(ros::Duration(0.1));
-  }
-  return 0;
+	while (ros::ok()) {
+    		ros::spinOnce();
+		printf("%s\n", category_buffer);
+    		sc.playWaveFromPkg("sound_play", category_buffer);
+    		r.sleep();
+		// TODO how do we wait for 20 seconds for song to play?
+	}
+	return 0;
 
 }
