@@ -8,7 +8,6 @@
 #include <env_gen_music/colormood.h>
 
 static const std::string OPENCV_WINDOW = "Image window";
-static const std::string OUT_WINDOW = "Output window";
 
 class ImageConverter {
 	ros::NodeHandle nh_;
@@ -21,6 +20,7 @@ class ImageConverter {
 	int g;
 	int b;
 	int saturation;
+	int hue;
 	int sat_counter;
   
 public: ImageConverter() : it_(nh_) {
@@ -34,6 +34,7 @@ public: ImageConverter() : it_(nh_) {
 	r = 0;
 	g = 0;
 	b = 0;
+	saturation = 0;
 }
 
 ~ImageConverter() {
@@ -77,23 +78,29 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg) {
 
 	//get the average saturation of the image
 	saturation = 0;
+	hue = 0;
 	sat_counter = 0;
 	cvtColor(RGBImg, HSVImg, CV_BGR2HSV);
 	for(unsigned int i = 0; i < HSVImg.rows; i++) {
 		for(unsigned int j = 0; j < HSVImg.cols; j++) {
 			int sat_ij = (int)HSVImg.at<cv::Vec3b>(i,j)[1];
+			int hue_ij = (int)HSVImg.at<cv::Vec3b>(i,j)[0];	
 			saturation += sat_ij;
+			hue += hue_ij;
 			sat_counter++;
 		}	
 	}
 	saturation = saturation / sat_counter;
+	hue = hue / sat_counter;
 
 	//right now the subscriber expects 1 for happy/fast and anything else otherwise
-	int happiness;
-	int tempo;
-	// TODO determine mood here with r g b
-		
+	int happiness = (hue > 135 || hue < 45) ? 1 : 0; //warm between 135 and 45
+	int tempo = saturation > 127 ? 1 : 0; //saturation max is 255
+	
+	//debugging information
+	ROS_INFO("saturation: %d, hue: %d, happiness: %d, tempo: %d\n", saturation, hue, happiness, tempo);
 
+	//construct message
 	mood_msg.happiness = happiness;
 	mood_msg.tempo = tempo;
 	colormood_pub.publish(mood_msg);
@@ -101,9 +108,6 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg) {
 
 	//show input
  	cv::imshow(OPENCV_WINDOW, cv_ptr->image);
-    
-	//show output
-	cv::imshow(OUT_WINDOW, RGBImg);
     
 	//pause for 3 ms
 	cv::waitKey(3);
