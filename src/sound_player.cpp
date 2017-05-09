@@ -51,6 +51,7 @@ int main(int argc, char **argv) {
 
 	while (ros::ok()) {
     		ros::spinOnce();
+		printf("%s\n", category_buffer);
     		sc.playWaveFromPkg("sound_play", category_buffer);
     		r.sleep();
 		// TODO how do we wait for 20 seconds for song to play?
