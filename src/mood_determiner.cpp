@@ -87,7 +87,7 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg) {
 	saturation = 0;
 	hue = 0;
 	sat_counter = 0;
-	cvtColor(RGBImg, HSVImg, CV_BGR2HSV);
+	cvtColor(cv_ptr->image.clone(), HSVImg, CV_BGR2HSV);
 	for(unsigned int i = 0; i < HSVImg.rows; i++) {
 		for(unsigned int j = 0; j < HSVImg.cols; j++) {
 			int sat_ij = (int)HSVImg.at<cv::Vec3b>(i,j)[1];
