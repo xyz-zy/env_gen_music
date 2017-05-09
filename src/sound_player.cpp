@@ -55,7 +55,7 @@ void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
 	//tracks if current mood is same as previous mood
 	if(!(prev_happiness == msg->happiness && prev_tempo == msg->tempo) && flag == 0) {
 		flag = 1;
-		printf("detected slight mood change");
+		printf("detected slight mood change\n");
 	}
 
 //	printf("time elapsed: %f\n", time_elapsed);
@@ -92,8 +92,6 @@ void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
 				sound_pub = 1;
 				same_mood = 0;
 				cur_mood = new_mood;
-				sprintf(category_buffer, "music/%s%d.wav", mood_strings[msg->happiness][msg->tempo], random);	
-				clip_time = sound_lengths[cur_mood][random-1];
 			} else { //don't change song
 				same_mood = 1;
 			}
@@ -108,23 +106,23 @@ void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
 	if(same_mood == 0){
 		//only runs when program first begins
 		if(flag == -1) {
-			printf("flag = -1");			
+			printf("flag = -1\n");			
 			sound_pub = 1;
-			sprintf(category_buffer, "music/%s%d.wav", mood_strings[msg->happiness][msg->tempo], random);	
-			clip_time = sound_lengths[cur_mood][random-1];
 			cur_mood = new_mood;
 			flag = 0;
 		}
 		//pick a new song once old song is over and mood changed
 		if(time_elapsed >= clip_time) {
 			sound_pub = 1;
-			sprintf(category_buffer, "music/%s%d.wav", mood_strings[msg->happiness][msg->tempo], random);	
-			clip_time = sound_lengths[cur_mood][random-1];
 //				printf("sound clip time: %d\n", sound_lengths[3][random-1]);
 		} else {
 			//don't publish song if not ready to loop
 			sound_pub = 0;
 		}
+	}
+	if(sound_pub == 1) {
+		sprintf(category_buffer, "music/%s%d.wav", mood_strings[msg->happiness][msg->tempo], random);	
+		clip_time = sound_lengths[cur_mood][random-1];
 	}
 	
 	//store data for next time this method is called
