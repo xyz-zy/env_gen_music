@@ -9,9 +9,9 @@
 
 char category_buffer[40];
 ros::Subscriber colormood_sub;
-int prev_happiness;
-int prev_tempo;
-int same_mood;
+int prev_happiness = 2;
+int prev_tempo = 2;
+int same_mood = 0;
 
 std::time_t start;
 std::time_t now;
@@ -34,10 +34,7 @@ void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
 	int numSongs = 4;
 	int random = (rand() % 4) + 1;
 
-	/*if(prev_happiness == msg->happiness && prev_tempo == msg->tempo) {
-		//don't change songs if we have the same mood
-		same_mood = 1;
-	} else {*/
+	if(!(prev_happiness == msg->happiness && prev_tempo == msg->tempo)) {
 		same_mood = 0;
 		if (msg->happiness == 1) { 
 			if (msg->tempo == 1) { 
@@ -57,7 +54,7 @@ void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
 				sprintf(category_buffer, "music/sad_slow%d.wav", random);	
 			}
 		}
-	//}
+	}
 	prev_happiness = msg->happiness;
 	prev_tempo = msg->tempo;
 
@@ -72,7 +69,7 @@ int main(int argc, char **argv) {
 	sound_play::SoundClient sc;
 	ros::NodeHandle n;
 	colormood_sub = n.subscribe("/colormood", 1, colormood_callback);
-	ros::Rate r(100);
+	ros::Rate r(10);
 	start = std::time(NULL);
 
 	while (ros::ok()) {
@@ -80,10 +77,10 @@ int main(int argc, char **argv) {
 		//printf("same_mood : %d\n", same_mood); //debug
 		now = std::time(NULL);
 		double time_elapsed = std::difftime(now, start);
-		if(category_buffer[0] != 0/* & same_mood == 0*/) { //only publish if the string isn't empty
+		if((category_buffer[0] != 0)/* && (same_mood == 0)*/) { //only publish if the string isn't empty
 			printf("%s\n", category_buffer); //debug
 			sc.playWaveFromPkg("env_gen_music", category_buffer);
-    			pause(20, n);
+    			pause(12, n);
 		}
 		r.sleep();
 	}
