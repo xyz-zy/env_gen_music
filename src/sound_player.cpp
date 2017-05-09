@@ -13,6 +13,12 @@ int prev_happiness = 2;
 int prev_tempo = 2;
 int same_mood = 0;
 
+int[][] sound_lengths ={{13, 12, 16, 16}, //happy_fast
+						{12, 22, 19, 21},	//happy_slow
+						{14, 12, 17, 19},	//sad_fast
+						{19, 18, 19, 15}};//sad_slow
+
+
 void pause(int time, ros::NodeHandle &n) {
 
 	if(n.ok()) {
