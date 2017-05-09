@@ -9,6 +9,7 @@
 
 char category_buffer[40];
 ros::Subscriber colormood_sub;
+//to track previous state
 int prev_happiness = 2;
 int prev_tempo = 2;
 int same_mood = 0;
@@ -19,6 +20,7 @@ int mood_change_counter = 0;
 double mood_change_determiner = 0;
 int flag = -1;
 
+//to track how much time has elapsed
 std::time_t start;
 std::time_t now;
 int clip_time;
@@ -42,18 +44,22 @@ void pause(int time, ros::NodeHandle &n) {
 }
 
 void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
+	//random number for song choice
 	int numSongs = 4;
 	int random = (rand() % 4) + 1;
 
+	//calculates current time
 	now = std::time(NULL);
 	time_elapsed = std::difftime(now, start);
 
+	//tracks if current mood is same as previous mood
 	if(!(prev_happiness == msg->happiness && prev_tempo == msg->tempo) && flag == 0) {
 		flag = 1;
 		printf("detected slight mood change\n");
 	}
 
 //	printf("time elapsed: %f\n", time_elapsed);
+	//tracks current mood
 	if (msg->happiness == 1) { 
 		if (msg->tempo == 1) { 
 			//happy_fast
@@ -73,6 +79,7 @@ void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
 		}
 	}
 
+	//mood is same as last so may not change song based on elapsed time
 	if(flag == 1) {
 //		printf("flag = 1\n");
 		mood_change_counter ++;
@@ -81,19 +88,22 @@ void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
 			printf("may or may not be changing mood\n");
 			mood_change_determiner /= mood_change_counter;
 			new_mood = (int) round(mood_change_determiner);
-			if(new_mood != cur_mood) {
+			if(new_mood != cur_mood) { //change song
 				same_mood = 0;
 				cur_mood = new_mood;
-			} else {
+			} else { //don't change song
 				same_mood = 1;
 			}
+			//reset everything regardless
 			mood_change_counter = 0;
 			mood_change_determiner = 0;
 			flag = 0;
 		}
 	}
-	printf("same_mood = %d\n", same_mood);
+
+	//not the same mood, so pick a new song
 	if(same_mood == 0){
+		//only runs when program first begins
 		if(flag == -1) {
 			printf("flag = -1\n");			
 			sound_pub = 1;
@@ -105,14 +115,17 @@ void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
 		clip_time = sound_lengths[cur_mood][random-1];
 		same_mood = 1;
 	} else {
+		//pick a new song once old song is over and mood changed
 		if(time_elapsed >= clip_time) {
 			sound_pub = 1;
 //				printf("sound clip time: %d\n", sound_lengths[3][random-1]);
 		} else {
+			//don't publish song if not ready to loop
 			sound_pub = 0;
 		}
 	}
 	
+	//store data for next time this method is called
 	prev_happiness = msg->happiness;
 	prev_tempo = msg->tempo;
 
