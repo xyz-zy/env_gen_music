@@ -45,19 +45,21 @@ void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
 			if (msg->tempo == 1) { 
 				//happy_fast
 				sprintf(category_buffer, "music/happy_fast%d.wav", random);				
+				clip_time = sound_lengths[0][random-1];
 			} else {
 				//happy_slow
-				sprintf(category_buffer, "music/happy_slow%d.wav", random);	
+				sprintf(category_buffer, "music/happy_slow%d.wav", random);
+				clip_time = sound_lengths[1][random-1];
 			}
 		} else {
 			if (msg->tempo == 1) { 
 				//sad_fast	
-				sprintf(category_buffer, "music/sad_fast%d.wav", random);	
+				sprintf(category_buffer, "music/sad_fast%d.wav", random);					clip_time = sound_lengths[2][random-1];
 			}
 			else {
 				// sad_slow
 				sprintf(category_buffer, "music/sad_slow%d.wav", random);					clip_time = sound_lengths[3][random-1];
-				printf("sound clip time: %d\n", sound_lengths[3][random-1]);
+//				printf("sound clip time: %d\n", sound_lengths[3][random-1]);
 			}
 		}
 	} else {
