@@ -3,7 +3,7 @@
 #include <tf/transform_listener.h>
 #include <env_gen_music/colormood.h>
 #include <sound_play/sound_play.h>
-
+#include <math.h> 
 #include <vector>
 #include <iostream>
 
@@ -12,6 +12,12 @@ ros::Subscriber colormood_sub;
 int prev_happiness = 2;
 int prev_tempo = 2;
 int same_mood = 0;
+int sound_pub = 1;
+int cur_mood = -1;
+int new_mood;
+int mood_change_counter = 0;
+double mood_change_determiner = 0;
+int flag = -1;
 
 std::time_t start;
 std::time_t now;
@@ -22,6 +28,9 @@ int sound_lengths[4][4] =	{{13, 12, 16, 16}, 	//happy_fast
 							 {12, 22, 19, 21},	//happy_slow
 							 {14, 12, 17, 19},	//sad_fast
 							 {19, 18, 19, 15}};	//sad_slow
+
+const char* mood_strings[2][2] = {{"sad_slow", "sad_fast"},
+						  {"happy_slow", "happy_fast"}};
 
 
 void pause(int time, ros::NodeHandle &n) {
@@ -36,35 +45,75 @@ void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
 	int numSongs = 4;
 	int random = (rand() % 4) + 1;
 
-//	if(!(prev_happiness == msg->happiness && prev_tempo == msg->tempo)) {
-	if(time_elapsed >= clip_time) {
-		printf("time elapsed: %f\n", time_elapsed);
-		start = std::time(NULL);
-		same_mood = 0;
-		if (msg->happiness == 1) { 
-			if (msg->tempo == 1) { 
-				//happy_fast
-				sprintf(category_buffer, "music/happy_fast%d.wav", random);				
-				clip_time = sound_lengths[0][random-1];
-			} else {
-				//happy_slow
-				sprintf(category_buffer, "music/happy_slow%d.wav", random);
-				clip_time = sound_lengths[1][random-1];
-			}
+	now = std::time(NULL);
+	time_elapsed = std::difftime(now, start);
+
+	if(!(prev_happiness == msg->happiness && prev_tempo == msg->tempo) && flag == 0) {
+		flag = 1;
+		printf("detected slight mood change");
+	}
+
+//	printf("time elapsed: %f\n", time_elapsed);
+	if (msg->happiness == 1) { 
+		if (msg->tempo == 1) { 
+			//happy_fast
+			new_mood = 0;
 		} else {
-			if (msg->tempo == 1) { 
-				//sad_fast	
-				sprintf(category_buffer, "music/sad_fast%d.wav", random);					clip_time = sound_lengths[2][random-1];
-			}
-			else {
-				// sad_slow
-				sprintf(category_buffer, "music/sad_slow%d.wav", random);					clip_time = sound_lengths[3][random-1];
-//				printf("sound clip time: %d\n", sound_lengths[3][random-1]);
-			}
+			//happy_slow
+			new_mood = 1;
 		}
 	} else {
-		same_mood = 1;
+		if (msg->tempo == 1) { 
+			//sad_fast	
+			new_mood = 2;
+		}
+		else {
+			// sad_slow
+			new_mood = 3;
+		}
 	}
+
+	if(flag == 1) {
+//		printf("flag = 1\n");
+		mood_change_counter ++;
+		mood_change_determiner += new_mood;
+		if(mood_change_counter == 10000) {
+			printf("may or may not be changing mood\n");
+			mood_change_determiner /= mood_change_counter;
+			new_mood = (int) round(mood_change_determiner);
+			if(new_mood != cur_mood) {
+				sound_pub = 1;
+				same_mood = 0;
+				cur_mood = new_mood;
+				sprintf(category_buffer, "music/%s%d.wav", mood_strings[msg->happiness][msg->tempo], random);	
+				clip_time = sound_lengths[cur_mood][random-1];
+			} else {
+				same_mood = 1;
+			}
+			mood_change_counter = 0;
+			mood_change_determiner = 0;
+			flag = 0;
+		}
+	}
+	if(same_mood == 0){
+		if(flag == -1) {
+			printf("flag = -1");			
+			sound_pub = 1;
+			sprintf(category_buffer, "music/%s%d.wav", mood_strings[msg->happiness][msg->tempo], random);	
+			clip_time = sound_lengths[cur_mood][random-1];
+			cur_mood = new_mood;
+			flag = 0;
+		}
+		if(time_elapsed >= clip_time) {
+			sound_pub = 1;
+			sprintf(category_buffer, "music/%s%d.wav", mood_strings[msg->happiness][msg->tempo], random);	
+			clip_time = sound_lengths[cur_mood][random-1];
+//				printf("sound clip time: %d\n", sound_lengths[3][random-1]);
+		} else {
+			sound_pub = 0;
+		}
+	}
+	
 	prev_happiness = msg->happiness;
 	prev_tempo = msg->tempo;
 
@@ -85,11 +134,11 @@ int main(int argc, char **argv) {
 	while (ros::ok()) {
     		ros::spinOnce();
 		//printf("same_mood : %d\n", same_mood); //debug
-		now = std::time(NULL);
-		time_elapsed = std::difftime(now, start);
 //		printf("time elapsed: %f\n", time_elapsed);
-		if((category_buffer[0] != 0) && (same_mood == 0)) { //only publish if the string isn't empty
-//			printf("in main: %s\n", category_buffer); //debug
+		if((category_buffer[0] != 0) && sound_pub == 1) { //only publish if the string isn't empty and sound clip needs to be changed or replayed
+			start = std::time(NULL);
+			printf("time elapsed: %f\n", time_elapsed);
+			printf("in main: %s\n", category_buffer); //debug
 			sc.playWaveFromPkg("env_gen_music", category_buffer);
 //    			pause(clip_time, n);
 		}
