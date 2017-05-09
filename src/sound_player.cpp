@@ -13,10 +13,13 @@ int prev_happiness;
 int prev_tempo;
 int same_mood;
 
-int[][] sound_lengths ={{13, 12, 16, 16}, //happy_fast
+std::time_t start;
+std::time_t now;
+
+int[][] sound_lengths ={{13, 12, 16, 16}, 	//happy_fast
 						{12, 22, 19, 21},	//happy_slow
 						{14, 12, 17, 19},	//sad_fast
-						{19, 18, 19, 15}};//sad_slow
+						{19, 18, 19, 15}};	//sad_slow
 
 
 void pause(int time, ros::NodeHandle &n) {
@@ -70,10 +73,13 @@ int main(int argc, char **argv) {
 	ros::NodeHandle n;
 	colormood_sub = n.subscribe("/colormood", 1, colormood_callback);
 	ros::Rate r(100);
+	start = std::time(NULL);
 
 	while (ros::ok()) {
     		ros::spinOnce();
 		//printf("same_mood : %d\n", same_mood); //debug
+		now = std::time(NULL);
+		double time_elapsed = std::difftime(now, start);
 		if(category_buffer[0] != 0/* & same_mood == 0*/) { //only publish if the string isn't empty
 			printf("%s\n", category_buffer); //debug
 			sc.playWaveFromPkg("env_gen_music", category_buffer);
