@@ -1,27 +1,43 @@
 # Environment-based-Music-Generation
 Freshman Research Initiative (FRI) Spring 2017 Final Project
 
-Branches:
-- publish\_mood: all code handling image manipulation and thresholding should be edited in this branch and determined to be functional before merging with  master
-- play\_music: all code handling playing music correctly should be edited in this branch and determined to be functional before merging with  master
+This project adds two nodes to the robot that enable the robot to play music based on its environment.
 
-Idea 1:
-- node publishes the number designating how cold/warm the environment is on a scale of 1-5
-- node subscribes to that number and plays music from one of five categories
-- happiness is everything: happiness, tempo, etc.
+How to run the nodes:
+1. In one terminal window, start roscore.
+2. In the second terminal window, either start the robot, or if running in simulation, play a rosbag.
+3. In the third terminal window, run the mood\_determiner node from the env\_gen\_music package.
+4. In a fourth terminal window, run soundplay\_node.py node from the sound\_play package.
+5. In the fifth terminal window, run the sound\_player node from the env\_gen\_music package.
 
-Idea 2:
-- get more complex
-- saturation determines tempo (slow, med, fast)
-- hue determine happiness/sadness of song (on a scale of 1-5)
-- three speeds and five moods -> fifteen categories
+In summary, these are the lines you should type into the terminal:
 
-Sound play ros info/options:
-http://wiki.ros.org/sound_play
-  Tutorial: http://wiki.ros.org/sound_play/Tutorials/ConfiguringAndUsingSpeakers
-  Example: http://answers.ros.org/question/233956/how-do-i-play-sound-file-in-a-c-node-with-sound_play/
+	roscore
+	roslaunch segbot_v2.launch OR rosbag play -l <name of rosbag>
+	rosrun env_gen_music mood_determiner
+	rosrun sound_play soundplay_node.py
+	rosrun env_gen_music sound_player
 
-Stuff to do for sound:
-1. Change the package name so the package can work.
-2. Use the playWavFromPkg method to play the sound. It uses path relative to its package.
-3. Collect a bunch of .wav files and put them in various folders based on category. 
+mood\_determiner:
+This node takes in the visual data from the camera feed and processes the image to determine
+whether the image is predominantly warm or cool colors. Specifically, the node converts the image
+to the HSV color space, then finds the average hue and saturation over the image. Based on the hue,
+the node outputs a 1 to signal a warm image or a 0 to signal a cold image. The node also outputs
+a 1 to signal low saturation and a 0 to signal high saturation.
+
+	Inputs: visual data from camera
+	Outputs: warmth of image (1 or 0) and average saturation (1 or 0)
+	Subscribers: sound_player
+
+sound\_player:
+This node subscribes the data published by the mood\_determiner and uses that to pick a song to play.
+The warmth of the image is used to determine the mood of the song, happy for warm images and sad for
+cold ones. The saturation of the image is used to determine the tempo of the image, fast for high
+saturation images and slow for low saturation images. This means that there are four categories of songs:
+happy-fast, happy-slow, sad-fast, and sad-slow. This node picks from a database of songs stored in the
+package based on the correct category and then plays that song continuously until the mood changes
+for a significant amount of time.
+
+	Inputs: warmth of image and average saturation
+	Outputs: file path to a song to play
+	Subscribers: soundplay_node.py
