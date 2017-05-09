@@ -8,7 +8,6 @@
 #include <iostream>
 
 char category_buffer[20];
-std::string category;
 ros::Subscriber colormood_sub;
 
 void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
@@ -35,6 +34,9 @@ void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
 			sprintf(category_buffer, "sad_slow%d.wav", random);	
 		}
 	}
+
+	//debug statements
+	ROS_INFO("random: %d, string: %s\n", random, category_buffer);
 
 	//if (person) {
 		// person
