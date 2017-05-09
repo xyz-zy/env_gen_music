@@ -101,8 +101,8 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg) {
 	hue = hue / sat_counter;
 
 	//right now the subscriber expects 1 for happy/fast and anything else otherwise
-	int happiness = (hue > 135 || hue < 45) ? 1 : 0; //warm between 135 and 45
-	int tempo = saturation > 127 ? 1 : 0; //saturation max is 255
+	int happiness = (hue > 100 /*|| hue < 45*/) ? 1 : 0; //warm between 135 and 45
+	int tempo = saturation > 100 ? 1 : 0; //saturation max is 255
 	
 	//debugging information
 	ROS_INFO("saturation: %d, hue: %d, happiness: %d, tempo: %d\n", saturation, hue, happiness, tempo);
