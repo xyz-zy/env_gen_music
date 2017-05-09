@@ -72,7 +72,7 @@ void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
 }
 
 int main(int argc, char **argv) {
-	
+	srand(std::time(NULL));
 	ros::init(argc, argv, "sound_player");
 	sound_play::SoundClient sc;
 	ros::NodeHandle n;
