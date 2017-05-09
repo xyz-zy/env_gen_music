@@ -8,7 +8,6 @@
 #include <env_gen_music/colormood.h>
 
 static const std::string OPENCV_WINDOW = "Image window";
-static const std::string OUT_WINDOW = "Output window";
 
 class ImageConverter {
 	ros::NodeHandle nh_;
@@ -109,9 +108,6 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg) {
 
 	//show input
  	cv::imshow(OPENCV_WINDOW, cv_ptr->image);
-    
-	//show output
-	cv::imshow(OUT_WINDOW, RGBImg);
     
 	//pause for 3 ms
 	cv::waitKey(3);
