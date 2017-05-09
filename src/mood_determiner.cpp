@@ -98,6 +98,9 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg) {
 	int happiness = (hue > 135 || hue < 45) ? 1 : 0; //warm between 135 and 45
 	int tempo = saturation > 127 ? 1 : 0; //saturation max is 255
 	
+	//debugging information
+	ROS_INFO("saturation: %d, hue: %d, happiness: %d, tempo: %d\n", saturation, hue, happiness, tempo);
+
 	//construct message
 	mood_msg.happiness = happiness;
 	mood_msg.tempo = tempo;
