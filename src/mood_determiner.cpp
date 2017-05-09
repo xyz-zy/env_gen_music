@@ -33,9 +33,9 @@ public: ImageConverter() : it_(nh_) {
 	// publish to "colormood" 
 	colormood_pub = nh_.advertise<env_gen_music::colormood>("colormood", 1);
 	cv::namedWindow(OPENCV_WINDOW);
-	r = 0;
+	/*r = 0;
 	g = 0;
-	b = 0;
+	b = 0;*/
 	hue = 0;
 	saturation = 0;
 }
