@@ -82,7 +82,6 @@ void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
 			mood_change_determiner /= mood_change_counter;
 			new_mood = (int) round(mood_change_determiner);
 			if(new_mood != cur_mood) {
-				sound_pub = 1;
 				same_mood = 0;
 				cur_mood = new_mood;
 			} else {
@@ -93,6 +92,7 @@ void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
 			flag = 0;
 		}
 	}
+	printf("same_mood = %d\n", same_mood);
 	if(same_mood == 0){
 		if(flag == -1) {
 			printf("flag = -1\n");			
@@ -100,16 +100,17 @@ void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
 			cur_mood = new_mood;
 			flag = 0;
 		}
+		sound_pub = 1;
+		sprintf(category_buffer, "music/%s%d.wav", mood_strings[msg->happiness][msg->tempo], random);	
+		clip_time = sound_lengths[cur_mood][random-1];
+		same_mood = 1;
+	} else {
 		if(time_elapsed >= clip_time) {
 			sound_pub = 1;
 //				printf("sound clip time: %d\n", sound_lengths[3][random-1]);
 		} else {
 			sound_pub = 0;
 		}
-	}
-	if(sound_pub == 1) {
-		sprintf(category_buffer, "music/%s%d.wav", mood_strings[msg->happiness][msg->tempo], random);	
-		clip_time = sound_lengths[cur_mood][random-1];
 	}
 	
 	prev_happiness = msg->happiness;
