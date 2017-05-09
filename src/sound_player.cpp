@@ -16,12 +16,12 @@ ros::Subscriber colormood_sub;
 
 // callback function: if hat is within threshold value of middle of window, don't move, otherwise move in correct direction in increments
 void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
-    int numSongs = 4;
+	int numSongs = 4;
 	// get random number based on numSongs
 	int rand;
 
-	if (msg->happiness) {
-		if (msg->tempo) {
+	if (msg->happiness == 1) { //TODO: fix threshold to fit happy
+		if (msg->tempo == 1) { //TODO: fix threshold to fit fast
 			// happy_fast
 			// string = "happy_fast%d.wav", rand
 		}
@@ -30,7 +30,7 @@ void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
 		}
 	}
 	else {
-		if (msg->tempo) {
+		if (msg->tempo == 1) { //TODO: fix threshold to fit fast
 			// slow_fast
 		}
 		else {

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>Environment-based-Music-Generation</name>
+  <name>env_gen_music</name>
   <version>0.0.0</version>
   <description>The Environment-based-Music-Generation package</description>
 

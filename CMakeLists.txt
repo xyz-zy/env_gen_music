@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(Environment-based-Music-Generation)
+project(env_gen_music)
 
 # we are now using the OpenCV library
 find_package(OpenCV)

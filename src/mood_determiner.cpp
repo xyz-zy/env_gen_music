@@ -10,100 +10,106 @@
 static const std::string OPENCV_WINDOW = "Image window";
 static const std::string OUT_WINDOW = "Output window";
 
-class ImageConverter
-{
-  ros::NodeHandle nh_;
-  image_transport::ImageTransport it_;
-  image_transport::Subscriber image_sub_;
-  image_transport::Publisher image_pub_;
-  ros::Publisher colormood_pub;
-  int counter;
+class ImageConverter {
+	ros::NodeHandle nh_;
+	image_transport::ImageTransport it_;
+	image_transport::Subscriber image_sub_;
+	image_transport::Publisher image_pub_;
+	ros::Publisher colormood_pub;
+	int rgb_counter;
 	int r;
 	int g;
 	int b;
+	int saturation;
+	int sat_counter;
   
-public:
-  ImageConverter()
-    : it_(nh_)
-  {
-    // Subscrive to input video feed and publish output video feed
-    image_sub_ = it_.subscribe("/nav_kinect/rgb/image_color", 1, 
-      &ImageConverter::imageCb, this);
-    image_pub_ = it_.advertise("/mood_determiner/output_video", 1);
-    // publish to "colormood" 
-    colormood_pub = nh_.advertise<env_gen_music::colormood>("colormood", 1);
-    cv::namedWindow(OPENCV_WINDOW);
-    r = 0;
-    g = 0;
-    b = 0;
-  }
-
-  ~ImageConverter()
-  {
-    cv::destroyWindow(OPENCV_WINDOW);
-  }
-
-  void imageCb(const sensor_msgs::ImageConstPtr& msg)
-  {
-    cv_bridge::CvImagePtr cv_ptr;
-    try
-    {
-      cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-    }
-    catch (cv_bridge::Exception& e)
-    {
-      ROS_ERROR("cv_bridge exception: %s", e.what());
-      return;
-    }
-    
-    
-    //declare output image
-    cv::Mat outImg;
-    r = 0;
-    g = 0;
-    b = 0;
-	int counter = 0;
-    env_gen_music::moodcolor mood_msg;
+public: ImageConverter() : it_(nh_) {
+ 	// Subscribe to input video feed and publish output video feed
+	image_sub_ = it_.subscribe("/nav_kinect/rgb/image_color", 1, &ImageConverter::imageCb, this);
+	image_pub_ = it_.advertise("/mood_determiner/output_video", 1);
 	
-	outImg = cv_ptr->image.clone(); 
-	for (unsigned int i = 0; i < outImg.rows; i ++){
-		for (unsigned int j = 0; j < outImg.cols; j ++){
-			//example of how to look up pixel values
-			int b_ij = (int)outImg.at<cv::Vec3b>(i,j)[0];
-			int g_ij = (int)outImg.at<cv::Vec3b>(i,j)[1];
-			int r_ij = (int)outImg.at<cv::Vec3b>(i,j)[2];
+	// publish to "colormood" 
+	colormood_pub = nh_.advertise<env_gen_music::colormood>("colormood", 1);
+	cv::namedWindow(OPENCV_WINDOW);
+	r = 0;
+	g = 0;
+	b = 0;
+}
+
+~ImageConverter() {
+	cv::destroyWindow(OPENCV_WINDOW);
+}
+
+void imageCb(const sensor_msgs::ImageConstPtr& msg) {
+	cv_bridge::CvImagePtr cv_ptr;
+	try {
+      		cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+   	} catch (cv_bridge::Exception& e) {
+      		ROS_ERROR("cv_bridge exception: %s", e.what());
+      		return;
+    	}
+    
+	//declare output image
+	cv::Mat RGBImg;
+	cv::Mat HSVImg;
+	r = 0;
+	g = 0;
+	b = 0;
+	int rgb_counter = 0;
+	env_gen_music::colormood mood_msg;
+	
+	//get the average RGB value of the image
+	RGBImg = cv_ptr->image.clone(); 
+	for (unsigned int i = 0; i < RGBImg.rows; i ++){
+		for (unsigned int j = 0; j < RGBImg.cols; j ++){
+			int b_ij = (int)RGBImg.at<cv::Vec3b>(i,j)[0];
+			int g_ij = (int)RGBImg.at<cv::Vec3b>(i,j)[1];
+			int r_ij = (int)RGBImg.at<cv::Vec3b>(i,j)[2];
 			r += r_ij;
 			g += g_ij;
 			b += b_ij;
-			counter++;
+			rgb_counter++;
 		}
 	}
+	r = r/rgb_counter;
+	g = g/rgb_counter;
+	b = b/rgb_counter;	
 
-	// get average r g b values
-	r = r/counter;
-	g = g/counter;
-	b = b/counter;	
+	//get the average saturation of the image
+	saturation = 0;
+	sat_counter = 0;
+	cvtColor(RGBImg, HSVImg, CV_BGR2HSV);
+	for(unsigned int i = 0; i < HSVImg.rows; i++) {
+		for(unsigned int j = 0; j < HSVImg.cols; j++) {
+			int sat_ij = (int)HSVImg.at<cv::Vec3b>(i,j)[1];
+			saturation += sat_ij;
+			sat_counter++;
+		}	
+	}
+	saturation = saturation / sat_counter;
 
+	//right now the subscriber expects 1 for happy/fast and anything else otherwise
 	int happiness;
 	int tempo;
 	// TODO determine mood here with r g b
+		
 
-	mood_msg.happiness = mood;
+	mood_msg.happiness = happiness;
 	mood_msg.tempo = tempo;
 	colormood_pub.publish(mood_msg);
 	
 
 	//show input
-    cv::imshow(OPENCV_WINDOW, cv_ptr->image);
+ 	cv::imshow(OPENCV_WINDOW, cv_ptr->image);
     
 	//show output
-	cv::imshow(OUT_WINDOW, outImg);
+	cv::imshow(OUT_WINDOW, RGBImg);
     
 	//pause for 3 ms
-    cv::waitKey(3);
+	cv::waitKey(3);
     
-    // Output modified video stream
-    image_pub_.publish(cv_ptr->toImageMsg());
+	//Output modified video stream
+	image_pub_.publish(cv_ptr->toImageMsg());
   }
 };
 
