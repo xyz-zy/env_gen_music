@@ -19,7 +19,7 @@ sad_slow2.wav - "Ambient Piano Loop 105 bpm" from orangefreesounds.com
 sad_slow3.wav - "Focus" from playonloop.com
 sad_slow4.wav - "Sea of Memories" from playonloop.com
 
-person1 - "Hello" from SoundBible
+person1.wav - "Hello" from SoundBible
 person2
 person3
 person4
