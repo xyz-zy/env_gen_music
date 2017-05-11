@@ -41,3 +41,8 @@ for a significant amount of time.
 	Inputs: warmth of image and average saturation
 	Outputs: file path to a song to play
 	Subscribers: soundplay_node.py
+
+
+Music from: (see music/MusicList.txt for individual clip sources)
+PlayOnLoop.com - Licensed under Creative Commons By Attribution 4.0
+OrangeFreeSounds.com - Licensed under Creative Commons By Attribution 4.0

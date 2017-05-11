@@ -88,7 +88,6 @@ void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
 		if(mood_change_counter == 30) {
 //			printf("may or may not be changing mood, mood_change_det: %f\n", mood_change_determiner);
 			mood_change_determiner /= mood_change_counter;
-			printf("mcd after: %f\n", mood_change_determiner);
 			new_mood = (int) round(mood_change_determiner);
 			if(new_mood != cur_mood) { //change song
 				same_mood = 0;
@@ -106,8 +105,7 @@ void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
 	//not the same mood, so pick a new song
 	if(same_mood == 0){
 		//only runs when program first begins
-		if(flag == -1) {
-			printf("flag = -1\n");			
+		if(flag == -1) {		
 			sound_pub = 1;
 			cur_mood = new_mood;
 			flag = 0;
@@ -116,8 +114,7 @@ void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
 		sprintf(category_buffer, "music/%s%d.wav", mood_strings[msg->happiness][msg->tempo], random);	
 		clip_time = sound_lengths[cur_mood][random-1];
 		same_mood = 1;
-	} else {
-		//pick a new song once old song is over and mood changed
+	} else { //pick a new song once old song is over and mood changed
 		if(time_elapsed >= clip_time) {
 			sound_pub = 1;
 //				printf("sound clip time: %d\n", sound_lengths[3][random-1]);
@@ -151,8 +148,8 @@ int main(int argc, char **argv) {
 //		printf("time elapsed: %f\n", time_elapsed);
 		if((category_buffer[0] != 0) && sound_pub == 1) { //only publish if the string isn't empty and sound clip needs to be changed or replayed
 			start = std::time(NULL);
-			printf("time elapsed: %f\n", time_elapsed);
-			printf("in main: %s\n", category_buffer); //debug
+//			printf("time elapsed: %f\n", time_elapsed);
+//			printf("in main: %s\n", category_buffer); //debug
 			sc.playWaveFromPkg("env_gen_music", category_buffer);
 //    			pause(clip_time, n);
 		}
