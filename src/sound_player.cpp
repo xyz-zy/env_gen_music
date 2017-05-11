@@ -84,9 +84,11 @@ void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
 //		printf("flag = 1\n");
 		mood_change_counter ++;
 		mood_change_determiner += new_mood;
-		if(mood_change_counter == 10000) {
-//			printf("may or may not be changing mood\n");
+
+		if(mood_change_counter == 30) {
+//			printf("may or may not be changing mood, mood_change_det: %f\n", mood_change_determiner);
 			mood_change_determiner /= mood_change_counter;
+			printf("mcd after: %f\n", mood_change_determiner);
 			new_mood = (int) round(mood_change_determiner);
 			if(new_mood != cur_mood) { //change song
 				same_mood = 0;
