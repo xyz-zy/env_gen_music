@@ -7,7 +7,7 @@ This project adds two nodes to the robot that enable the robot to play music bas
 	https://github.com/ros-drivers/audio_common/issues/23
 For this project's sound_player node to work correctly, please perform the following, as per the issue's suggested fix:
 1. Open the soundplay\_node.py file, in the installed sound_play package directory, as root. This should be located in /opt/ros/indigo/lib/sound\_play/.
-2. Comment out line "self.stopAll()" directly under the comment "# Force only one sound at a time". This should be line 216.
+2. Comment out line "self.stopAll()" directly under the comment "# Force only one sound at a time". This should be line 261.
 3. Save and close. Now sound_player should run correctly.
 
 How to run the nodes:
