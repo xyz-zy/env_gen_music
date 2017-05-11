@@ -162,7 +162,8 @@ int main(int argc, char **argv) {
 			printf("person_not_seen: %d\n", person_not_seen);
 			person = 0;
 			if(person_not_seen > 35) {
-				sc.playWaveFromPkg("env_gen_music", "music/person1.wav");
+				sc.stopAll();
+				sc.playWaveFromPkg("env_gen_music", "music/I_Slay.wav");
 			}
 			person_not_seen = 0;
 		} else {
@@ -170,10 +171,11 @@ int main(int argc, char **argv) {
 		}
 		//printf("same_mood : %d\n", same_mood); //debug
 //		printf("time elapsed: %f\n", time_elapsed);
-		if((category_buffer[0] != 0) && sound_pub == 1) { //only publish if the string isn't empty and sound clip needs to be changed or replayed
+		if((category_buffer[0] != 0) && sound_pub == 1 && person_not_seen > 35) { //only publish if the string isn't empty and sound clip needs to be changed or replayed
 			start = std::time(NULL);
 //			printf("time elapsed: %f\n", time_elapsed);
 //			printf("in main: %s\n", category_buffer); //debug
+			sc.stopAll();
 			sc.startWaveFromPkg("env_gen_music", category_buffer);
 //    			pause(clip_time, n);
 		} 
