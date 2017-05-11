@@ -26,6 +26,7 @@ int flag = -1;
 
 //to track whether a person is present in frame
 int person = 0;
+int person_not_seen = 51;
 
 //to track how much time has elapsed
 std::time_t start;
@@ -158,9 +159,14 @@ int main(int argc, char **argv) {
 	while (ros::ok()) {
     	ros::spinOnce();
 		if(person == 1) {
+			printf("person_not_seen: %d\n", person_not_seen);
 			person = 0;
-			printf("person!");
-			sc.playWaveFromPkg("env_gen_music", "music/person1.wav");
+			if(person_not_seen > 35) {
+				sc.playWaveFromPkg("env_gen_music", "music/person1.wav");
+			}
+			person_not_seen = 0;
+		} else {
+			person_not_seen++;
 		}
 		//printf("same_mood : %d\n", same_mood); //debug
 //		printf("time elapsed: %f\n", time_elapsed);

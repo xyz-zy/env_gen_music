@@ -10,20 +10,19 @@ int main(int argc, char** argv) {
 	ros::init(argc, argv, "test_marker_pub");
 	ros::NodeHandle n;	
 	marker_pub = n.advertise<visualization_msgs::Marker>("segbot_pcl_person_detector/marker", 1000);
-  	ros::Rate r(10);
+  	ros::Rate r(5);
 
 	int on = 0;
 
 	while (ros::ok()) {
     	ros::spinOnce();
-		if(on == 50) {
-			on = 0;
-			printf("publishing marker\n");
+		if(on % 110 == 0 || on % 80 == 0) {
+			printf("publishing marker: %d\n", on);
 			visualization_msgs::Marker marker;
 			marker_pub.publish(marker);
-		} else {
+		} //else {
 			on++;
-		}
+//		}
 		r.sleep();
 	}
 	return 0;
