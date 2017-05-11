@@ -15,7 +15,8 @@ How to run the nodes:
 2. In the second terminal window, either start the robot, or if running in simulation, play a rosbag.
 3. In the third terminal window, run the mood\_determiner node from the env\_gen\_music package.
 4. In a fourth terminal window, run soundplay\_node.py node from the sound\_play package.
-5. In the fifth terminal window, run the sound\_player node from the env\_gen\_music package.
+5. In a fifth terminal window, either "roslaunch pcl\_perception background\_people\_detection\_v2.launch", if on the robot, or run the test\_marker\_pub node from the env\_gen\_music package.
+6. In the sixth terminal window, run the sound\_player node from the env\_gen\_music package.
 
 In summary, these are the lines you should type into the terminal:
 
