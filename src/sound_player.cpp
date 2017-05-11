@@ -7,8 +7,12 @@
 #include <vector>
 #include <iostream>
 
+#include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
+
 char category_buffer[40];
 ros::Subscriber colormood_sub;
+ros::Subscriber pcl_perception_sub;
 //to track previous state
 int prev_happiness = 2;
 int prev_tempo = 2;
@@ -19,6 +23,9 @@ int new_mood;
 int mood_change_counter = 0;
 double mood_change_determiner = 0;
 int flag = -1;
+
+//to track whether a person is present in frame
+int person = 0;
 
 //to track how much time has elapsed
 std::time_t start;
@@ -114,11 +121,11 @@ void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
 		sprintf(category_buffer, "music/%s%d.wav", mood_strings[msg->happiness][msg->tempo], random);	
 		clip_time = sound_lengths[cur_mood][random-1];
 		same_mood = 1;
-	} else { //pick a new song once old song is over and mood changed
+	}	else {
 		if(time_elapsed >= clip_time) {
 			sound_pub = 1;
 //				printf("sound clip time: %d\n", sound_lengths[3][random-1]);
-		} else {
+		} else { 
 			//don't publish song if not ready to loop
 			sound_pub = 0;
 		}
@@ -127,32 +134,43 @@ void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
 	//store data for next time this method is called
 	prev_happiness = msg->happiness;
 	prev_tempo = msg->tempo;
+}
 
-	//if (person) {
-		// person
-	//}
+void pcl_perception_callback(const visualization_msgs::Marker::ConstPtr& msg) {
+//	int num_people = sizeof(msg->markers)/sizeof(visualization_msgs::Marker);
+
+//	if(num_people > 0) {
+		person = 1;
+//	}
 }
 
 int main(int argc, char **argv) {
 	srand(std::time(NULL));
 	ros::init(argc, argv, "sound_player");
-	sound_play::SoundClient sc;
 	ros::NodeHandle n;
+	ros::NodeHandle n2;
+	sound_play::SoundClient sc(n, "robotsound");
 	colormood_sub = n.subscribe("/colormood", 1, colormood_callback);
+	pcl_perception_sub = n.subscribe("/segbot_pcl_person_detector/marker", 1, pcl_perception_callback);
 	ros::Rate r(10);
 	start = std::time(NULL);
 
 	while (ros::ok()) {
-    		ros::spinOnce();
+    	ros::spinOnce();
+		if(person == 1) {
+			person = 0;
+			printf("person!");
+			sc.playWaveFromPkg("env_gen_music", "music/person1.wav");
+		}
 		//printf("same_mood : %d\n", same_mood); //debug
 //		printf("time elapsed: %f\n", time_elapsed);
 		if((category_buffer[0] != 0) && sound_pub == 1) { //only publish if the string isn't empty and sound clip needs to be changed or replayed
 			start = std::time(NULL);
 //			printf("time elapsed: %f\n", time_elapsed);
 //			printf("in main: %s\n", category_buffer); //debug
-			sc.playWaveFromPkg("env_gen_music", category_buffer);
+			sc.startWaveFromPkg("env_gen_music", category_buffer);
 //    			pause(clip_time, n);
-		}
+		} 
 		r.sleep();
 	}
 	return 0;

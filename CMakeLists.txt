@@ -152,6 +152,8 @@ target_link_libraries(mood_determiner ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 add_executable(sound_player src/sound_player.cpp)
 target_link_libraries(sound_player ${catkin_LIBRARIES})
 
+add_executable(test_marker_pub src/test_marker_pub.cpp)
+target_link_libraries(test_marker_pub ${catkin_LIBRARIES})
 
 #############
 ## Install ##
