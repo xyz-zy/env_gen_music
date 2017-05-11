@@ -55,7 +55,7 @@ void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
 	//tracks if current mood is same as previous mood
 	if(!(prev_happiness == msg->happiness && prev_tempo == msg->tempo) && flag == 0) {
 		flag = 1;
-		printf("detected slight mood change\n");
+//		printf("detected slight mood change\n");
 	}
 
 //	printf("time elapsed: %f\n", time_elapsed);
@@ -85,7 +85,7 @@ void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
 		mood_change_counter ++;
 		mood_change_determiner += new_mood;
 		if(mood_change_counter == 10000) {
-			printf("may or may not be changing mood\n");
+//			printf("may or may not be changing mood\n");
 			mood_change_determiner /= mood_change_counter;
 			new_mood = (int) round(mood_change_determiner);
 			if(new_mood != cur_mood) { //change song
