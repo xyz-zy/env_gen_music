@@ -28,8 +28,15 @@ int flag = -1;
 int person = 0;
 int person_not_seen = 51;
 
+int person_sum = 0;
+int person_loop = 0;
+int person_detect = 0;
+int person_sound = 0;
+int prev_person_sound = person_sound;
+
 //to track how much time has elapsed
-std::time_t start;
+std::time_t mood_music_start;
+std::time_t person_music_start;
 std::time_t now;
 int clip_time;
 double time_elapsed;
@@ -58,7 +65,7 @@ void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
 
 	//calculates current time
 	now = std::time(NULL);
-	time_elapsed = std::difftime(now, start);
+	time_elapsed = std::difftime(now, mood_music_start);
 
 	//tracks if current mood is same as previous mood
 	if(!(prev_happiness == msg->happiness && prev_tempo == msg->tempo) && flag == 0) {
@@ -111,7 +118,7 @@ void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
 	}
 
 	//not the same mood, so pick a new song
-	if(same_mood == 0){
+	if(same_mood == 0 || prev_person_sound != person_sound){
 		//only runs when program first begins
 		if(flag == -1) {		
 			sound_pub = 1;
@@ -119,8 +126,13 @@ void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
 			flag = 0;
 		}
 		sound_pub = 1;
-		sprintf(category_buffer, "music/%s%d.wav", mood_strings[msg->happiness][msg->tempo], random);	
-		clip_time = sound_lengths[cur_mood][random-1];
+		if(person_sound == 0) {
+			sprintf(category_buffer, "music/%s%d.wav", mood_strings[msg->happiness][msg->tempo], random);	
+			clip_time = sound_lengths[cur_mood][random-1];
+		} else {
+			sprintf(category_buffer, "music/I_Slay.wav");	
+			clip_time = 32;
+		}
 		same_mood = 1;
 	}	else {
 		if(time_elapsed >= clip_time) {
@@ -135,14 +147,11 @@ void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
 	//store data for next time this method is called
 	prev_happiness = msg->happiness;
 	prev_tempo = msg->tempo;
+	prev_person_sound = person_sound;
 }
 
 void pcl_perception_callback(const visualization_msgs::Marker::ConstPtr& msg) {
-//	int num_people = sizeof(msg->markers)/sizeof(visualization_msgs::Marker);
-
-//	if(num_people > 0) {
-		person = 1;
-//	}
+	person = 1;
 }
 
 int main(int argc, char **argv) {
@@ -154,31 +163,51 @@ int main(int argc, char **argv) {
 	colormood_sub = n.subscribe("/colormood", 1, colormood_callback);
 	pcl_perception_sub = n.subscribe("/segbot_pcl_person_detector/marker", 1, pcl_perception_callback);
 	ros::Rate r(10);
-	start = std::time(NULL);
+	mood_music_start = std::time(NULL);
 
 	while (ros::ok()) {
     	ros::spinOnce();
 		if(person == 1) {
 			printf("person_not_seen: %d\n", person_not_seen);
-			person = 0;
-			if(person_not_seen > 35) {
-				sc.stopAll();
-				sc.playWaveFromPkg("env_gen_music", "music/I_Slay.wav");
+			printf("person_detect: %d\n", person_detect);
+			if(person_detect == 0) { //start detecting people
+				person_detect = 1;
 			}
+			if(person_detect == 1) {	
+				person_sum++;
+			}
+			person = 0;
 			person_not_seen = 0;
 		} else {
+			if(person_not_seen > 30) {
+				person_detect = 0;
+				person_sound = 0;
+//				sc.stopAll();
+//				sc.playWaveFromPkg("env_gen_music", "music/I_Slay.wav");
+			}
 			person_not_seen++;
+		}
+		if(person_detect == 1) {
+			person_loop++;
+		}
+		if(person_loop == 10) {
+			printf("person_loop = 10; person_sum = %d\n", person_sum);
+			if(person_sum > 4	) {
+				person_sound = 1;
+			}
+			person_loop = 0;
+			person_sum = 0;
 		}
 		//printf("same_mood : %d\n", same_mood); //debug
 //		printf("time elapsed: %f\n", time_elapsed);
-		if((category_buffer[0] != 0) && sound_pub == 1 && person_not_seen > 35) { //only publish if the string isn't empty and sound clip needs to be changed or replayed
-			start = std::time(NULL);
+		if((category_buffer[0] != 0) && sound_pub == 1) { //only publish if the string isn't empty and sound clip needs to be changed or replayed
+			mood_music_start = std::time(NULL);
 //			printf("time elapsed: %f\n", time_elapsed);
 //			printf("in main: %s\n", category_buffer); //debug
 			sc.stopAll();
 			sc.startWaveFromPkg("env_gen_music", category_buffer);
 //    			pause(clip_time, n);
-		} 
+		}
 		r.sleep();
 	}
 	return 0;
