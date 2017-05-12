@@ -179,7 +179,7 @@ int main(int argc, char **argv) {
 			person = 0;
 			person_not_seen = 0;
 		} else {
-			if(person_not_seen > 30) {
+			if(person_not_seen > 20) {
 				person_detect = 0;
 				person_sound = 0;
 //				sc.stopAll();
