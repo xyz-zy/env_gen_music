@@ -190,9 +190,9 @@ int main(int argc, char **argv) {
 		if(person_detect == 1) {
 			person_loop++;
 		}
-		if(person_loop == 10) {
+		if(person_loop == 1) {
 			printf("person_loop = 10; person_sum = %d\n", person_sum);
-			if(person_sum > 4	) {
+			if(person_sum > 0	) {
 				person_sound = 1;
 			}
 			person_loop = 0;
