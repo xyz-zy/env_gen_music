@@ -3,13 +3,6 @@ Freshman Research Initiative (FRI) Spring 2017 Final Project
 
 This project adds two nodes to the robot that enable the robot to play music based on its environment.
 
-**Currently, the ROS Indigo sound\_play package is buggy. As per the documentation, the package should allow multiple sounds to play at once, but this is not the case. You can view the open issue in the sound\_play github repository here:
-	https://github.com/ros-drivers/audio_common/issues/23
-For this project's sound_player node to work correctly, please perform the following, as per the issue's suggested fix:
-1. Open the soundplay\_node.py file, in the installed sound_play package directory, as root. This should be located in /opt/ros/indigo/lib/sound\_play/.
-2. Comment out line "self.stopAll()" directly under the comment "# Force only one sound at a time". This should be line 261.
-3. Save and close. Now sound_player should run correctly.
-
 How to run the nodes:
 1. In one terminal window, start roscore.
 2. In the second terminal window, either start the robot, or if running in simulation, play a rosbag.
@@ -53,3 +46,4 @@ for a significant amount of time.
 Music from: (see music/MusicList.txt for individual clip sources)
 PlayOnLoop.com - Licensed under Creative Commons By Attribution 4.0
 OrangeFreeSounds.com - Licensed under Creative Commons By Attribution 4.0
+Clip from Beyonce's "Formation"
