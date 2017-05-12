@@ -12,17 +12,28 @@ int main(int argc, char** argv) {
 	marker_pub = n.advertise<visualization_msgs::Marker>("segbot_pcl_person_detector/marker", 1000);
   	ros::Rate r(5);
 
+	int ctr = 0;
 	int on = 0;
 
 	while (ros::ok()) {
     	ros::spinOnce();
-		if(on % 110 == 0 || on % 80 == 0) {
-			printf("publishing marker: %d\n", on);
+		if(ctr % 110 == 0 || ctr % 80 == 0) {
+			on = 1;
 			visualization_msgs::Marker marker;
 			marker_pub.publish(marker);
 		} //else {
-			on++;
+			ctr++;
 //		}
+
+		if(on > 15) {
+			on = 0;
+		} else if(on > 0 ) {
+			printf("publishing marker: %d\n", ctr);
+			visualization_msgs::Marker marker;
+			marker_pub.publish(marker);
+			on ++;
+		}
+
 		r.sleep();
 	}
 	return 0;
