@@ -1,6 +1,8 @@
 # Environment-based-Music-Generation
 Freshman Research Initiative (FRI) Spring 2017 Final Project
 
+Demo Video: https://youtu.be/GBlt-hrmVT4
+
 This project adds two nodes to the robot that enable the robot to play music based on its environment.
 
 How to run the nodes:
