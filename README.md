@@ -2,6 +2,7 @@
 Freshman Research Initiative (FRI) Spring 2017 Final Project
 
 Demo Video: https://youtu.be/GBlt-hrmVT4
+Github Repository: https://github.com/xyz-zy/env_gen_music
 
 This project adds two nodes to the robot that enable the robot to play music based on its environment.
 
