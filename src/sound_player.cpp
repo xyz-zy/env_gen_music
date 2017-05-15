@@ -17,30 +17,34 @@ ros::Subscriber pcl_perception_sub;
 int prev_happiness = 2;
 int prev_tempo = 2;
 int same_mood = 0;
-int sound_pub = 1;
 int cur_mood = -1;
 int new_mood;
 int mood_change_counter = 0;
 double mood_change_determiner = 0;
 int flag = -1;
 
+//to figure out whether to publish new song
+int sound_pub = 1;
+
 //to track whether a person is present in frame
 int person = 0;
 int person_not_seen = 51;
 
+//for person detection
 int person_sum = 0;
 int person_loop = 0;
 int person_detect = 0;
 int person_sound = 0;
 int prev_person_sound = person_sound;
 
-//to track how much time has elapsed
+//to track how much time has elapsed while playing song
 std::time_t mood_music_start;
 std::time_t person_music_start;
 std::time_t now;
 int clip_time;
 double time_elapsed;
 
+//array of song lengths for each song in database
 int sound_lengths[4][4] =	{{13, 12, 16, 16}, 	//happy_fast
 							 {12, 22, 19, 21},	//happy_slow
 							 {14, 12, 17, 19},	//sad_fast
@@ -49,14 +53,6 @@ int sound_lengths[4][4] =	{{13, 12, 16, 16}, 	//happy_fast
 const char* mood_strings[2][2] = {{"sad_slow", "sad_fast"},
 						  {"happy_slow", "happy_fast"}};
 
-
-void pause(int time, ros::NodeHandle &n) {
-
-	if(n.ok()) {
-		sleep(time);
-	}
-
-}
 
 void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
 	//random number for song choice
@@ -70,10 +66,8 @@ void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
 	//tracks if current mood is same as previous mood
 	if(!(prev_happiness == msg->happiness && prev_tempo == msg->tempo) && flag == 0) {
 		flag = 1;
-//		printf("detected slight mood change\n");
 	}
 
-//	printf("time elapsed: %f\n", time_elapsed);
 	//tracks current mood
 	if (msg->happiness == 1) { 
 		if (msg->tempo == 1) { 
@@ -96,12 +90,10 @@ void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
 
 	//mood is same as last so may not change song based on elapsed time
 	if(flag == 1) {
-//		printf("flag = 1\n");
 		mood_change_counter ++;
 		mood_change_determiner += new_mood;
 
 		if(mood_change_counter == 30) {
-//			printf("may or may not be changing mood, mood_change_det: %f\n", mood_change_determiner);
 			mood_change_determiner /= mood_change_counter;
 			new_mood = (int) round(mood_change_determiner);
 			if(new_mood != cur_mood) { //change song
@@ -117,15 +109,19 @@ void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
 		}
 	}
 
-	//not the same mood, so pick a new song
+	//not the same mood and not a person, so pick a new song
 	if(same_mood == 0 || prev_person_sound != person_sound){
-		//only runs when program first begins
+		//only runs when program first begins and there is no previous state
 		if(flag == -1) {		
 			sound_pub = 1;
 			cur_mood = new_mood;
 			flag = 0;
 		}
+		
+		//publish song
 		sound_pub = 1;
+		
+		//make sure that a person song is not playing before picking a mood song
 		if(person_sound == 0) {
 			sprintf(category_buffer, "music/%s%d.wav", mood_strings[msg->happiness][msg->tempo], random);	
 			clip_time = sound_lengths[cur_mood][random-1];
@@ -133,29 +129,35 @@ void colormood_callback(const env_gen_music::colormood::ConstPtr& msg) {
 			sprintf(category_buffer, "music/I_Slay.wav");	
 			clip_time = 32;
 		}
+		
+		//default to same mood
 		same_mood = 1;
-	}	else {
+	} else {
+		//tell sound_play to play same song again and loop if song has finished
 		if(time_elapsed >= clip_time) {
 			sound_pub = 1;
-//				printf("sound clip time: %d\n", sound_lengths[3][random-1]);
 		} else { 
 			//don't publish song if not ready to loop
 			sound_pub = 0;
 		}
 	}
 	
-	//store data for next time this method is called
+	//store data for next time this method is called (track previous state)
 	prev_happiness = msg->happiness;
 	prev_tempo = msg->tempo;
 	prev_person_sound = person_sound;
 }
 
+//for person detection: let program know a person has been detected
 void pcl_perception_callback(const visualization_msgs::Marker::ConstPtr& msg) {
 	person = 1;
 }
 
 int main(int argc, char **argv) {
+	//seed randomness on system time
 	srand(std::time(NULL));
+	
+	//ROS initialization
 	ros::init(argc, argv, "sound_player");
 	ros::NodeHandle n;
 	ros::NodeHandle n2;
@@ -165,11 +167,11 @@ int main(int argc, char **argv) {
 	ros::Rate r(10);
 	mood_music_start = std::time(NULL);
 
+	//continually look for new information from publisher
 	while (ros::ok()) {
     	ros::spinOnce();
+		//let callback know that a person has been detected if it has	
 		if(person == 1) {
-			printf("person_not_seen: %d\n", person_not_seen);
-			printf("person_detect: %d\n", person_detect);
 			if(person_detect == 0) { //start detecting people
 				person_detect = 1;
 			}
@@ -179,34 +181,30 @@ int main(int argc, char **argv) {
 			person = 0;
 			person_not_seen = 0;
 		} else {
+			//stop playing person sound if a person has been gone for a long enough time
 			if(person_not_seen > 20) {
 				person_detect = 0;
 				person_sound = 0;
-//				sc.stopAll();
-//				sc.playWaveFromPkg("env_gen_music", "music/I_Slay.wav");
 			}
 			person_not_seen++;
 		}
+		//loop person song if person in frame
 		if(person_detect == 1) {
 			person_loop++;
 		}
 		if(person_loop == 1) {
-			printf("person_loop = 10; person_sum = %d\n", person_sum);
-			if(person_sum > 0	) {
+			if(person_sum > 0) {
 				person_sound = 1;
 			}
 			person_loop = 0;
 			person_sum = 0;
 		}
-		//printf("same_mood : %d\n", same_mood); //debug
-//		printf("time elapsed: %f\n", time_elapsed);
+		
+		//handle mood music
 		if((category_buffer[0] != 0) && sound_pub == 1) { //only publish if the string isn't empty and sound clip needs to be changed or replayed
 			mood_music_start = std::time(NULL);
-//			printf("time elapsed: %f\n", time_elapsed);
-//			printf("in main: %s\n", category_buffer); //debug
 			sc.stopAll();
 			sc.startWaveFromPkg("env_gen_music", category_buffer);
-//    			pause(clip_time, n);
 		}
 		r.sleep();
 	}

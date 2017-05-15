@@ -16,11 +16,6 @@ class ImageConverter {
 	image_transport::Publisher image_pub_;
 	ros::Publisher colormood_pub;
 	int rgb_counter;
-/*
-	int r;
-	int g;
-	int b;
-*/
 	int saturation;
 	int hue;
 	int sat_counter;
@@ -33,9 +28,6 @@ class ImageConverter {
 		// publish to "colormood" 
 		colormood_pub = nh_.advertise<env_gen_music::colormood>("colormood", 1);
 		cv::namedWindow(OPENCV_WINDOW);
-		/*r = 0;
-		g = 0;
-		b = 0;*/
 		hue = 0;
 		saturation = 0;
 	}
@@ -54,44 +46,18 @@ class ImageConverter {
 		}
 		
 		//declare output image
-		cv::Mat RGBImg;
 		cv::Mat HSVImg;
-	/*
-		r = 0;
-		g = 0;
-		b = 0;
-		int rgb_counter = 0;
-	*/
 		env_gen_music::colormood mood_msg;
 	
-		//get the average RGB value of the image
-	/*
-		RGBImg = cv_ptr->image.clone(); 
-		for (unsigned int i = 0; i < RGBImg.rows; i ++){
-			for (unsigned int j = 0; j < RGBImg.cols; j ++){
-				int b_ij = (int)RGBImg.at<cv::Vec3b>(i,j)[0];
-				int g_ij = (int)RGBImg.at<cv::Vec3b>(i,j)[1];
-				int r_ij = (int)RGBImg.at<cv::Vec3b>(i,j)[2];
-				r += r_ij;
-				g += g_ij;
-				b += b_ij;
-				rgb_counter++;
-			}
-		}
-		r = r/rgb_counter;
-		g = g/rgb_counter;
-		b = b/rgb_counter;	
-	*/
-
 		//get the average saturation of the image
 		saturation = 0;
 		hue = 0;
 		sat_counter = 0;
 		cvtColor(cv_ptr->image.clone(), HSVImg, CV_BGR2HSV);
-		for(unsigned int i = 0; i < HSVImg.rows; i++) {
+		for(unsigned int i = 0; i < HSVImg.rows; i++) { //iterate over each pixel in image
 			for(unsigned int j = 0; j < HSVImg.cols; j++) {
-				int sat_ij = (int)HSVImg.at<cv::Vec3b>(i,j)[1];
-				int hue_ij = (int)HSVImg.at<cv::Vec3b>(i,j)[0];	
+				int sat_ij = (int)HSVImg.at<cv::Vec3b>(i,j)[1]; //saturation
+				int hue_ij = (int)HSVImg.at<cv::Vec3b>(i,j)[0];	//hue
 				saturation += sat_ij;
 				hue += hue_ij;
 				sat_counter++;
@@ -100,9 +66,9 @@ class ImageConverter {
 		saturation = saturation / sat_counter;
 		hue = hue / sat_counter;
 
-		//right now the subscriber expects 1 for happy/fast and anything else otherwise
-		int happiness = (hue > 90 || hue < 60) ? 1 : 0; //warm between 135 and 45
-		int tempo = saturation > 100 ? 1 : 0; //saturation max is 255
+		//subscriber expects 1 for happy/fast and anything else otherwise
+		int happiness = (hue > 90 || hue < 60) ? 1 : 0; //warm between 0-60 and 90-180
+		int tempo = saturation > 100 ? 1 : 0; //saturation max is 255, saturated between 100-255
 	
 		//debugging information
 		ROS_INFO("saturation: %d, hue: %d, happiness: %d, tempo: %d\n", saturation, hue, happiness, tempo);
